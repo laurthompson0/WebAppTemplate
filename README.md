@@ -15,7 +15,7 @@ cp _env_templates/dev.env .env
 docker compose up
 ```
 
-Browse to `http://localhost:81`
+Browse to `http://localhost:81/ui`
 
 ## About
 
