@@ -1,0 +1,78 @@
+version: "3.5"
+
+services:
+  gw:
+    image: ${DOCKER_REPO}/gw:${IMAGE_TAG}
+    container_name: gw_${DEPLOY_ENV}
+    restart: ${RESTART_POLICY}
+    ports:
+      - 127.0.0.1:${GW_PORT}:80
+    networks:
+      - app-net
+    environment:
+      - UI_HOST=${UI_HOST}
+      - API_HOST=${API_HOST}
+      - ADMINER_HOST=${ADMINER_HOST}
+
+  ui:
+    image: ${DOCKER_REPO}/ui:${IMAGE_TAG}
+    container_name: ui_${DEPLOY_ENV}
+    restart: ${RESTART_POLICY}
+    networks:
+      - app-net
+    environment:
+      - UI_ROOT_PATH=${UI_ROOT_PATH}
+      - VITE_API_URL=${VITE_API_URL}
+
+  app:
+    image: ${DOCKER_REPO}/app:${IMAGE_TAG}
+    container_name: app_${DEPLOY_ENV}
+    restart: ${RESTART_POLICY}
+    networks:
+      - app-net
+    environment:
+      - API_ROOT_PATH=${API_ROOT_PATH}
+      - API_HOST=${API_HOST}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+  db-pg:
+    image: postgres:latest # specify version
+    container_name: db-pg_${DEPLOY_ENV}
+    restart: ${RESTART_POLICY}
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - app-net
+    volumes:
+      - ./db/pg/init:/docker-entrypoint-initdb.d #check this path
+      - pg-data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer_${DEPLOY_ENV}
+    restart: ${RESTART_POLICY}
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    name: app-net_${DEPLOY_ENV}
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.0.0/24 # Have to hardcode to avoid conflict with host IP range
+          gateway: 172.18.0.1
+
+volumes:
+  pg-data:
+    name: pg-data_${DEPLOY_ENV}
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./db/pg/data/${DEPLOY_ENV}

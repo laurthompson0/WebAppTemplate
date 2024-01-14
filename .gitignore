@@ -1,0 +1,40 @@
+.env
+
+# Don't put the override in prod...
+# docker-compose.override.*
+
+# DB data volumes
+data*
+
+# Python env
+venv*
+__pypackages__/
+.cache
+**/__pycache__/
+
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+

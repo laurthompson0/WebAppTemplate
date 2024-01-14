@@ -1,0 +1,58 @@
+version: "3.5"
+
+services:
+  gw:
+    build:
+      context: ./gw
+    image: gw:dev
+    volumes:
+      - ./gw/conf/nginx.conf:/etc/nginx/nginx.conf:z
+      - ./gw/conf/default.conf:/etc/nginx/templates/default.conf.template:z
+
+  ui:
+    build:
+      context: ./ui
+    image: ui:dev
+    volumes:
+      - ui-src:/app/src
+
+  app:
+    build:
+      context: ./app
+    image: app:dev
+    command: [
+        "uvicorn",
+        "api.main:app",
+        "--proxy-headers",
+        "--host",
+        "0.0.0.0",
+        "--root-path",
+        "${API_ROOT_PATH}",
+        "--reload",
+      ] # include reload
+    volumes:
+      - api-src:/code/api
+
+networks:
+  app-net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.1.0/24 # Hardcode to avoid conflict with Host IP range
+          gateway: 172.18.1.1
+
+volumes:
+  ui-src: # Add volume for UI source code so we can use reload in dev
+    name: ui-src_${DEPLOY_ENV}
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./ui/src
+  api-src:
+    name: api-src_${DEPLOY_ENV}
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./app/api
