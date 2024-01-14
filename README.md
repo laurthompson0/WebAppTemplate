@@ -1,9 +1,3 @@
-# TODO
-
-- fix UI issue
-- fix db issue
-- Pretty up the main page
-
 # Full Stack Web App Template
 
 ## To Run
